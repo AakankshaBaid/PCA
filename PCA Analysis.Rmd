@@ -1,0 +1,135 @@
+---
+title: 'PCA Analysis'
+author: "Aakanksha Baid"
+date: "January 2020"
+output: word_document
+urlcolor: blue
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Import, scale, and summarize the data
+
+```{r}
+#import
+assgn1_DF = read.csv("Data/assg1.csv")
+
+#summary
+library(psych)
+summary(assgn1_DF)
+describe(assgn1_DF)
+
+#scaling
+assgn1.sc <- assgn1_DF
+assgn1.sc[, 2:6] <- scale(assgn1.sc[,2:6])
+describe(assgn1.sc)
+
+```
+
+The data has ratings of 30 respondents on 5 questions related to their attitudes towards discount and departmental stores.The ratings are all on a scale of 0-9.
+The average ratings of X1, X2, X3, X4 and X5 are 4.4, 5.13, 3.67, 5.4 and 4.53. As mean ratings are not same as median ratings, the distributon of ratings is skewed.The median ratings are generally higher than the mean ratings except for questions 3 and 5. The first quartile for X1, X3 and X5 is 2 while for X2 and X4 is 2.5, meaning 25 percent of the ratings are at most 2 for X1, X3 and X5. The third quartile shows variability across questions, for X1 its 7, or 75 percent of ratings for X1 were up to 7. 
+
+After scaling the data to ensure that the data is comparable, means of the ratings in questions X1 - X5 are now zero and the standard deviations are all 1.
+
+
+### matrix of correlations
+
+```{r}
+#correlation
+cor(assgn1.sc[, 2:6])
+
+#correlation plots
+library(corrplot)
+corrplot(cor(assgn1.sc[, 2:6]), order="hclust")
+```
+
+The correlation analysis suggests that -- 
+1) there is a strong correlation between the variables (questions X1 - X3), 
+2) Strong positive correlation between X1 and X3 suggests that individuals like store salespersons who respect them and answer their questions, 
+3) Strong negative correlation between X1 and X2 indicates that individuals like to be respected and treated courteously but not to the extent of fawning or flattery, 
+4) Also, strong negative correlation between X2 and X3 suggests that individuals like store salespersons who answers all their questions but not  those who fawn over customers,
+5)MOderate positive correlation between X4 and X5 suggests individuals prefer low price over fancy displays
+
+
+### PCA
+
+```{r}
+#PCA
+assgn1.pc = prcomp(assgn1.sc[,2:6])
+summary(assgn1.pc)
+
+#matrix of relationship between factors and original variables
+assgn1.pc$rotation
+
+```
+
+PCA maps our original 5 variables on another five-dimensional space, where each dimension is orthogonal. The Proportion of variance row of the table above explains how much of the variance in the data is explained by each component, in decreasing order. Thus, the first component explains 53.43\% of the variance in the data, the second component explains 37.04\%, and so on. The cumulative variance row for the first and second components together explain 90.48\% of the variance in the data. In other words, we can reduce the dimensionality of our original set of five variables to two, and still retain 90.48\% of the explanatory power.
+
+The matrix tell the exact relationship between each factor and the original variables. 
+
+
+### Equations 
+
+
+Equations defining relationship between each factor from PCA and the original variables are -
+
+$$PC1 = -0.555 \cdot X1 + 0.571 \cdot X2 - 0.580 \cdot X3 - 0.017 \cdot X4 + 0.174 \cdot X5 $$
+
+$$PC2 = 0.232 \cdot X1 + 0.212 \cdot X2 + 0.157 \cdot X3 + 0.686 \cdot X4 + 0.637 \cdot X5 $$
+
+$$PC3 = -0.280 \cdot X1 - 0.183 \cdot X2 + 0.311 \cdot X3 -0.561 \cdot X4 + 0.691 \cdot X5 $$
+
+$$PC4 = -0.723 \cdot X1 -0.462 \cdot X2 + 0.187 \cdot X3 +0.461 \cdot X4 -0.125 \cdot X5 $$
+
+$$PC5 = 0.191 \cdot X1 -0.618 \cdot X2 -0.713 \cdot X3 +0.041 \cdot X4 + 0.267 \cdot X5 $$
+
+
+### Scree Plot
+
+```{r}
+#Using a `scree plot’ to help decide how many factors to retain
+plot(assgn1.pc, type='l')
+```
+
+From the scree plot above, 2 factors lie above the “kink”. Also by the 2nd criteria, 2 is more than 1 and are the optimal factors to be kept in the data.
+
+Thus, we can reduce the dimensionality of our data from five to two and 2 factors should be retained.
+
+
+### Factor names
+
+Intuitive names for the first and second factors can be PC1 = Customer friendly or  Good Customer service and PC2 = Economical or thrifty. 
+These factors represent store attributes that customers value. 
+I arrived at them from the equations defining relationship between the factors and the original variables. The first factor is heavily correlated with the rating on store's courteous staff who treats customers with repect but do not necessarily spend time answering customer questions or trying to flatter the customer. The PC1 equation is strongly correlated with the above characteristics.The second factor seems most positively correlated with department stores that do not have fancy display and discount stores that offer more bargain and cheap prices showing the importance of low price to customers. This is evidenced from PC2 equation which has strong correlation with above characteristics.
+
+
+### Plot of all the consumers on a two-dimensional map based on the first two principal components
+
+``` {r}
+#plot the ratings on the two main principal components using `biplot'
+# h and v are horizontal and vertical
+biplot(assgn1.pc, xlim=c(-.3,.3), ylim=c(-0.3,.3),xlab = 'Customer Friendly',ylab = 'Economical')
+abline(h = 0, v = 0, col = "gray60")
+
+```
+
+
+### Segments
+
+The above plot suggests presence of 4 customer segments represented by th black dots clusters.
+
+
+### Characteristics of each segment
+Characteristics of 4 customer segments -
+The first customer segment seeks good customer service or friendly service, want their questions answered and respected.
+The second customer segment are the thrifty/economical customers who are price sensitive and seek low cost discount stores than the big fancy displays of departmental stores.
+The third segment like courteous store salespersons who do not fawn over customers.
+The fourth segment lies in the bottom right quadrant are customers who don't have any specific attitudes.
+The segment characteristics are mostly correlated with original attributes.
+
+### Profitable segment
+The fourth customer segment is expected to be more profitable than the rest as they don't have any specific needs and can be easily pleased. The second segment who seek low prices are expected to be least profitable. Thw other 2 segments require investment on hiring and training of good salespersons and may not be the most profitable.
+Assuming the data to be representative, the size of the profitable or fourth segment is 4 or in percent terms is 4/30 = 13.3% of all respondents.
+
